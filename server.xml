@@ -1,218 +1,797 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Note:  A "Server" is not itself a "Container", so you may not
-     define subcomponents such as "Valves" at this level.
-     Documentation at /docs/config/server.html
- -->
-<!--
-A Server element represents the entire Catalina servlet container.
-Therefore, it must be the single outermost element in the conf/server.xml configuration file.
-Its attributes represent the characteristics of the servlet container as a whole.
-
-一个Server元素代表整个servlet container，因此只能有一个，必须是conf/server.xml文件里面的最外层元素，
-该元素下面的属性代表了整个servlet container的特性。
--->
-<Server port="8005" shutdown="SHUTDOWN">
-  <Listener className="org.apache.catalina.startup.VersionLoggerListener" />
-  <!-- Security listener. Documentation at /docs/config/listeners.html
-  <Listener className="org.apache.catalina.security.SecurityListener" />
-  -->
-  <!--APR library loader. Documentation at /docs/apr.html -->
-  <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
-  <!-- Prevent memory leaks due to use of particular java/javax APIs-->
-  <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
-  <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
-  <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
-
-  <!-- Global JNDI resources
-       Documentation at /docs/jndi-resources-howto.html
-  -->
-  <GlobalNamingResources>
-    <!-- Editable user database that can also be used by
-         UserDatabaseRealm to authenticate users
-    -->
-    <Resource name="UserDatabase" auth="Container"
-              type="org.apache.catalina.UserDatabase"
-              description="User database that can be updated and saved"
-              factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
-              pathname="conf/tomcat-users.xml" />
-  </GlobalNamingResources>
-
-  <!-- A "Service" is a collection of one or more "Connectors" that share
-       a single "Container" Note:  A "Service" is not itself a "Container",
-       so you may not define subcomponents such as "Valves" at this level.
-       Documentation at /docs/config/service.html
+  <!-- Note:  A "Server" is not itself a "Container", so you may not
+       define subcomponents such as "Valves" at this level.
+       Documentation at /docs/config/server.html
    -->
   <!--
-  A Service element represents the combination of one or more Connector components that share a single Engine component
-  for processing incoming requests. One or more Service elements may be nested inside a Server element.
-  一个Service元素由一个或者多个Connector元素组成，他们共享一个servlet container共同处理发过来的请求。一个Server元素可以嵌套多个Service元素。
+  A Server element represents the entire Catalina servlet container.
+  Therefore, it must be the single outermost element in the conf/server.xml configuration file.
+  Its attributes represent the characteristics of the servlet container as a whole.
 
-name="Catalina" 这个属性值会在日志里面记录
+  一个Server元素代表整个servlet container，因此只能有一个，必须是conf/server.xml文件里面的最外层元素，
+  该元素下面的属性代表了整个servlet container的特性。
   -->
-  <Service name="Catalina">
+  <Server port="8005" shutdown="SHUTDOWN">
+    <Listener className="org.apache.catalina.startup.VersionLoggerListener" />
+    <!-- Security listener. Documentation at /docs/config/listeners.html
+    <Listener className="org.apache.catalina.security.SecurityListener" />
+    -->
+    <!--APR library loader. Documentation at /docs/apr.html -->
+    <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
+    <!-- Prevent memory leaks due to use of particular java/javax APIs-->
+    <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
+    <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
+    <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
 
-    <!--The connectors can use a shared executor, you can define one or more named thread pools-->
+    <!-- Global JNDI resources
+         Documentation at /docs/jndi-resources-howto.html
+    -->
+    <GlobalNamingResources>
+      <!-- Editable user database that can also be used by
+           UserDatabaseRealm to authenticate users
+      -->
+      <Resource name="UserDatabase" auth="Container"
+                type="org.apache.catalina.UserDatabase"
+                description="User database that can be updated and saved"
+                factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
+                pathname="conf/tomcat-users.xml" />
+    </GlobalNamingResources>
+
+    <!-- A "Service" is a collection of one or more "Connectors" that share
+         a single "Container" Note:  A "Service" is not itself a "Container",
+         so you may not define subcomponents such as "Valves" at this level.
+         Documentation at /docs/config/service.html
+     -->
     <!--
-    The Executor represents a thread pool that can be shared between components in Tomcat.
-    Historically there has been a thread pool per connector created but this allows you to share a thread pool,
-    between (primarily) connector but also other components when those get configured to support executors
+    A Service element represents the combination of one or more Connector components that share a single Engine component
+    for processing incoming requests. One or more Service elements may be nested inside a Server element.
+    一个Service元素由一个或者多个Connector元素组成，他们共享一个servlet container共同处理发过来的请求。一个Server元素可以嵌套多个Service元素。
 
-    Executor即线程池，在元素之间可以共享，从历史上来说可以为每个connector创建一个单独的线程池，但是也可以共享同一个线程池，
-    connector与connector之间可以共享线程池，connector与其他组件之间也可以共享线程池。
-
-The executor has to implement the org.apache.catalina.Executor interface.
-
-executor必须实现org.apache.catalina.Executor接口
-
-The executor is a nested element to the Service element. And in order for it to be picked up by the connectors,
-the Executor element has to appear prior to the Connector element in server.xml
-
-executor元素是嵌套在Service元素里面的，要想让connectors引用到它Executor元素必须出现在Connector之前。
-
-    属性：
-    className：线程池实现类，必须实现org.apache.catalina.Executor接口，默认org.apache.catalina.core.StandardThreadExecutor。
-
-    name：线程池名称，这个名字用于其他地方引用这个线程池，这个名称必填且必须是唯一的。
-
-    threadPriority：线程优先级，默认是5， 即：Thread.NORM_PRIORITY
-
-    daemon：是否为后台进程，默认true
-
-  namePrefix：每个线程名称的前缀，线程名=namePrefix+threadNumber
-
-
-  maxThreads：最大线程数，默认200个
-
-  minSpareThreads：最小的总是保持存活状态的线程数，默认25个。
-
-  maxIdleTime：一个空闲线程被关闭之前的存活时间，单位毫秒，默认60000毫秒即一分钟，只有当active threads数量大于minSpareThreads值时才会关闭。
-
-  maxQueueSize：最大等待执行的任务数量，默认值Integer.MAX_VALUE
-  ，The maximum number of runnable tasks that can queue up awaiting execution before we reject them。
-    在被拒绝之前最大的可被排队等候执行的可运行的任务数量
+  name="Catalina" 这个属性值会在日志里面记录
     -->
-    <Executor
-            name="tomcatThreadPool"
-            maxThreads="500"
-            minSpareThreads="100"
-            maxIdleTime="60000"
-            maxQueueSize="10000"
-    />
-    <!--
-    <Executor name="tomcatThreadPool" namePrefix="catalina-exec-"
-        maxThreads="150" minSpareThreads="4"/>
-    -->
+    <Service name="Catalina">
 
-
-    <!-- A "Connector" represents an endpoint by which requests are received
-         and responses are returned. Documentation at :
-         Java HTTP Connector: /docs/config/http.html
-         Java AJP  Connector: /docs/config/ajp.html
-         APR (HTTP/AJP) Connector: /docs/apr.html
-         Define a non-SSL/TLS HTTP/1.1 Connector on port 8080
-    -->
-    <Connector port="8080" protocol="HTTP/1.1"
-               connectionTimeout="20000"
-               redirectPort="8443" />
-
-    <!--
-    <Connector port="8080" protocol="HTTP/1.1"
-               connectionTimeout="20000"
-               redirectPort="8443" />
-    -->
-    <!-- A "Connector" using the shared thread pool-->
-    <!--
-    <Connector executor="tomcatThreadPool"
-               port="8080" protocol="HTTP/1.1"
-               connectionTimeout="20000"
-               redirectPort="8443" />
-    -->
-    <!-- Define a SSL/TLS HTTP/1.1 Connector on port 8443
-         This connector uses the NIO implementation. The default
-         SSLImplementation will depend on the presence of the APR/native
-         library and the useOpenSSL attribute of the
-         AprLifecycleListener.
-         Either JSSE or OpenSSL style configuration may be used regardless of
-         the SSLImplementation selected. JSSE style configuration is used below.
-    -->
-    <!--
-    <Connector port="8443" protocol="org.apache.coyote.http11.Http11NioProtocol"
-               maxThreads="150" SSLEnabled="true">
-        <SSLHostConfig>
-            <Certificate certificateKeystoreFile="conf/localhost-rsa.jks"
-                         type="RSA" />
-        </SSLHostConfig>
-    </Connector>
-    -->
-    <!-- Define a SSL/TLS HTTP/1.1 Connector on port 8443 with HTTP/2
-         This connector uses the APR/native implementation which always uses
-         OpenSSL for TLS.
-         Either JSSE or OpenSSL style configuration may be used. OpenSSL style
-         configuration is used below.
-    -->
-    <!--
-    <Connector port="8443" protocol="org.apache.coyote.http11.Http11AprProtocol"
-               maxThreads="150" SSLEnabled="true" >
-        <UpgradeProtocol className="org.apache.coyote.http2.Http2Protocol" />
-        <SSLHostConfig>
-            <Certificate certificateKeyFile="conf/localhost-rsa-key.pem"
-                         certificateFile="conf/localhost-rsa-cert.pem"
-                         certificateChainFile="conf/localhost-rsa-chain.pem"
-                         type="RSA" />
-        </SSLHostConfig>
-    </Connector>
-    -->
-
-    <!-- Define an AJP 1.3 Connector on port 8009 -->
-    <Connector port="8009" protocol="AJP/1.3" redirectPort="8443" />
-
-
-    <!-- An Engine represents the entry point (within Catalina) that processes
-         every request.  The Engine implementation for Tomcat stand alone
-         analyzes the HTTP headers included with the request, and passes them
-         on to the appropriate Host (virtual host).
-         Documentation at /docs/config/engine.html -->
-
-    <!-- You should set jvmRoute to support load-balancing via AJP ie :
-    <Engine name="Catalina" defaultHost="localhost" jvmRoute="jvm1">
-    -->
-    <Engine name="Catalina" defaultHost="localhost">
-
-      <!--For clustering, please take a look at documentation at:
-          /docs/cluster-howto.html  (simple how to)
-          /docs/config/cluster.html (reference documentation) -->
+      <!--The connectors can use a shared executor, you can define one or more named thread pools-->
       <!--
-      <Cluster className="org.apache.catalina.ha.tcp.SimpleTcpCluster"/>
+      The Executor represents a thread pool that can be shared between components in Tomcat.
+      Historically there has been a thread pool per connector created but this allows you to share a thread pool,
+      between (primarily) connector but also other components when those get configured to support executors
+
+      Executor即线程池，在元素之间可以共享，从历史上来说可以为每个connector创建一个单独的线程池，但是也可以共享同一个线程池，
+      connector与connector之间可以共享线程池，connector与其他组件之间也可以共享线程池。
+
+  The executor has to implement the org.apache.catalina.Executor interface.
+
+  executor必须实现org.apache.catalina.Executor接口
+
+  The executor is a nested element to the Service element. And in order for it to be picked up by the connectors,
+  the Executor element has to appear prior to the Connector element in server.xml
+
+  Executor元素是嵌套在Service元素里面的，要想让connectors引用到它Executor元素必须出现在Connector之前。
+
+      属性：
+      className：线程池实现类，必须实现org.apache.catalina.Executor接口，默认org.apache.catalina.core.StandardThreadExecutor。
+
+      name：线程池名称，这个名字用于其他地方引用这个线程池，这个名称必填且必须是唯一的。
+
+      threadPriority：线程优先级，默认是5， 即：Thread.NORM_PRIORITY
+
+      daemon：是否为后台进程，默认true
+
+    namePrefix：每个线程名称的前缀，线程名=namePrefix+threadNumber
+
+
+    maxThreads：最大线程数，默认200个
+
+    minSpareThreads：最小的总是保持存活状态的线程数，默认25个。
+
+    maxIdleTime：一个空闲线程被关闭之前的存活时间，单位毫秒，默认60000毫秒即一分钟，只有当active threads数量大于minSpareThreads值时才会关闭。
+
+    maxQueueSize：最大等待执行的任务数量，默认值Integer.MAX_VALUE
+    ，The maximum number of runnable tasks that can queue up awaiting execution before we reject them。
+      在被拒绝之前最大的可被排队等候执行的可运行的任务数量
+      -->
+      <Executor
+              name="tomcatThreadPool"
+              maxThreads="500"
+              minSpareThreads="100"
+              maxIdleTime="60000"
+              maxQueueSize="10000"
+      />
+      <!--
+      <Executor name="tomcatThreadPool" namePrefix="catalina-exec-"
+          maxThreads="150" minSpareThreads="4"/>
       -->
 
-      <!-- Use the LockOutRealm to prevent attempts to guess user passwords
-           via a brute-force attack -->
-      <Realm className="org.apache.catalina.realm.LockOutRealm">
-        <!-- This Realm uses the UserDatabase configured in the global JNDI
-             resources under the key "UserDatabase".  Any edits
-             that are performed against this UserDatabase are immediately
-             available for use by the Realm.  -->
-        <Realm className="org.apache.catalina.realm.UserDatabaseRealm"
-               resourceName="UserDatabase"/>
-      </Realm>
 
-      <Host name="localhost"  appBase="webapps"
-            unpackWARs="true" autoDeploy="true">
+      <!-- A "Connector" represents an endpoint by which requests are received
+           and responses are returned. Documentation at :
+           Java HTTP Connector: /docs/config/http.html
+           Java AJP  Connector: /docs/config/ajp.html
+           APR (HTTP/AJP) Connector: /docs/apr.html
+           Define a non-SSL/TLS HTTP/1.1 Connector on port 8080
+      -->
+      <!--
+      The HTTP Connector element represents a Connector component that supports the HTTP/1.1 protocol.
+      It enables Catalina to function as a stand-alone web server, in addition to its ability to execute servlets and JSP pages.
+      A particular instance of this component listens for connections on a specific TCP port number on the server.
+      One or more such Connectors can be configured as part of a single Service, each forwarding to the associated Engine to
+      perform request processing and create the response.
 
-        <!-- SingleSignOn valve, share authentication between web applications
-             Documentation at: /docs/config/valve.html -->
+      If you wish to configure the Connector that is used for connections to web servers using the AJP protocol
+      (such as the mod_jk 1.2.x connector for Apache 1.3), please refer to the AJP Connector documentation.
+
+      Each incoming request requires a thread for the duration of that request. If more simultaneous requests are received
+      than can be handled by the currently available request processing threads, additional threads will be created up to
+      the configured maximum (the value of the maxThreads attribute). If still more simultaneous requests are received,
+      they are stacked up inside the server socket created by the Connector, up to the configured maximum
+      (the value of the acceptCount attribute). Any further simultaneous requests will receive "connection refused" errors,
+      until resources are available to process them.
+
+      HTTP Connector元素代表着一个支持HTTP/1.1协议的Connector组件。它使得Catalina可以作为一个单独的web服务器，除此之外它还能执行servlets
+      和 JSP 页面。一个具体的实现会监听一个TCP端口号，一个Service元素可以包含有一个或者多个Connector元素。每个都转发到关联的Engine去
+      执行请求处理及创建响应。
+
+      在处理请求期间每一个客户端发过来的请求都需要一个单独的线程去处理它们。如果接收到的并发请求数超过了当前线程池中线程的能够并发处理能力，
+      那么额外的线程将会被创建直到线程数到达maxThreads。如果还有更多的并发请求被接收，这些多余的请求将会被叠起到Connector创建的server socket里面，
+      直到叠起的请求数量到达acceptCount指定的值。如果再有更多的请求将会抛出"connection refused"错误，直到有可用的资源处理它们。
+
+
+      Connector公共属性(Common Attributes)：
+
+      allowTrace：是否允许TRACE HTTP method， 默认false。
+
+      asyncTimeout：默认的异步请求的超时时间，单位毫秒，默认30000(30 秒)
+
+      enableLookups：	如果想让DNS追踪到request.getRemoteHost()就设置为true， 默认为false
+
+      maxHeaderCount：请求头数量限制，一个请求的请求头数量如果超过了这个值请求将被拒绝，默认100个，小于0 表示没有限制。
+
+
+
+      maxParameterCount：	设置一个请求的最大的parameter and value pairs(GET plus POST)键值对数量，超过这个数量的键值对将会被忽略。
+        小于0 表示没有限制。默认10000个。
+
+      maxPostSize：容器将会对URL parameter parsing处理的最大的字节数，设置小于0的值可以禁用这个选项，默认值 2097152 (2 megabytes)
+
+      maxSavePostSize：
+
+  The maximum size in bytes of the POST which will be saved/buffered by the container during FORM or CLIENT-CERT authentication.
+  For both types of authentication, the POST will be saved/buffered before the user is authenticated. For CLIENT-CERT authentication,
+   the POST is buffered for the duration of the SSL handshake and the buffer emptied when the request is processed.
+   For FORM authentication the POST is saved whilst the user is re-directed to the login form and is retained until
+   the user successfully authenticates or the session associated with the authentication request expires.
+   The limit can be disabled by setting this attribute to -1. Setting the attribute to zero will disable the saving of POST
+   data during authentication. If not specified, this attribute is set to 4096 (4 kilobytes).
+
+
+  parseBodyMethods
+
+  A comma-separated list of HTTP methods for which request bodies will be parsed for request parameters identically to POST.
+  This is useful in RESTful applications that want to support POST-style semantics for PUT requests.
+  Note that any setting other than POST causes Tomcat to behave in a way that goes against the intent of the servlet specification.
+  The HTTP method TRACE is specifically forbidden here in accordance with the HTTP specification. The default is POST
+
+      port：TCP端口号，系统只允许一个服务对于同一个一个ip只能监听一个的端口号。如果设置为0，Tomcat将会为这个connector随机选择一个空闲的端口号。
+
+
+      protocol：协议，设置一个协议来处理发过来的请求，默认值是HTTP/1.1，它将自动选择使用基于Java NIO的connector或者基于APR/native的connector
+
+
+  Sets the protocol to handle incoming traffic. The default value is HTTP/1.1 which uses an auto-switching mechanism to
+  select either a Java NIO based connector or an APR/native based connector. If the PATH (Windows) or LD_LIBRARY_PATH
+  (on most unix systems) environment variables contain the Tomcat native library, and the AprLifecycleListener that is
+  used to initialize APR has its useAprConnector attribute set to true, the APR/native connector will be used. If the native
+  library cannot be found or the attribute is not configured, the Java NIO based connector will be used. Note that the APR/native
+  connector has different settings for HTTPS than the Java connectors.
+
+  可以显示的指定下面几种协议：
+  org.apache.coyote.http11.Http11NioProtocol - non blocking Java NIO connector
+  org.apache.coyote.http11.Http11Nio2Protocol - non blocking Java NIO2 connector
+  org.apache.coyote.http11.Http11AprProtocol - the APR/native connector.
+
+
+  To use an explicit protocol rather than rely on the auto-switching mechanism described above, the following values may be used:
+
+  org.apache.coyote.http11.Http11NioProtocol - non blocking Java NIO connector
+  org.apache.coyote.http11.Http11Nio2Protocol - non blocking Java NIO2 connector
+  org.apache.coyote.http11.Http11AprProtocol - the APR/native connector.
+
+  也可以自定义协议
+  Custom implementations may also be used.
+  Take a look at our Connector Comparison chart. The configuration for both Java connectors is identical, for http and https.
+  For more information on the APR connector and APR specific SSL settings please visit the APR documentation
+
+
+      proxyName：如果Connector是用于代理，这个值用于设置server name ，它将作为request.getServerName()的返回值。
+
+      proxyPort：端口号server port，将作为request.getServerPort()的返回值。
+
+      redirectPort：如果这个Connector支持non-SSL请求。如果一个接收到的请求匹配<security-constraint>需要SSL传输，
+      Catalina将会自动重定向这个请求到指定的端口号上
+
+  If this Connector is supporting non-SSL requests, and a request is received for which a matching <security-constraint>
+  requires SSL transport, Catalina will automatically redirect the request to the port number specified here.
+
+
+  scheme：设置协议(protocol)的名称，它将作为request.getScheme()的返回值。默认值是http
+
+  Set this attribute to the name of the protocol you wish to have returned by calls to request.getScheme().
+  For example, you would set this attribute to "https" for an SSL Connector. The default value is "http".
+
+  secure
+
+  Set this attribute to true if you wish to have calls to request.isSecure() to return true for requests received by this Connector.
+   You would want this on an SSL Connector or a non SSL connector that is receiving data from a SSL accelerator,
+   like a crypto card, a SSL appliance or even a webserver. The default value is false.
+
+
+  sendReasonPhrase：Tomcat 9中将会被移除
+
+  Set this attribute to true if you wish to have a reason phrase in the response. The default value is false.
+
+  Note: This option is deprecated and will be removed in Tomcat 9. The reason phrase will not be sent.
+
+
+
+      URIEncoding：设置字符编码，默认：UTF-8
+      This specifies the character encoding used to decode the URI bytes, after %xx decoding the URL.
+      If not specified, UTF-8 will be used unless the org.apache.catalina.STRICT_SERVLET_COMPLIANCE system property is set to true
+      in which case ISO-8859-1 will be used.
+
+  useBodyEncodingForURI：这个设置是为了兼容Tomcat 4.1.x
+
+  This specifies if the encoding specified in contentType should be used for URI query parameters,
+  instead of using the URIEncoding. This setting is present for compatibility with Tomcat 4.1.x,
+  where the encoding specified in the contentType, or explicitly set using Request.setCharacterEncoding method was also
+  used for the parameters from the URL. The default value is false.
+
+  Notes: 1) This setting is applied only to the query string of a request. Unlike URIEncoding it does not affect the path portion of a request URI. 2) If request character encoding is not known (is not provided by a browser and is not set by SetCharacterEncodingFilter or a similar filter using Request.setCharacterEncoding method), the default encoding is always "ISO-8859-1". The URIEncoding setting has no effect on this default.
+
+  useIPVHosts：
+
+
+  Set this attribute to true to cause Tomcat to use the IP address that the request was received on to determine
+  the Host to send the request to. The default value is false.
+
+  xpoweredBy
+
+  Set this attribute to true to cause Tomcat to advertise support for the Servlet specification using
+  the header recommended in the specification. The default value is false.
+
+
+
+      Connector标准实现属性(Standard Implementation)：
+      标准的HTTP connectors(如：NIO, NIO2 and APR/native)都支持下面这些属性（除了上面的这些公共属性外）
+
+
+      acceptCount：当所有可接受处理请求的线程都被占用时，放入到队列里面的待处理的请求个数，当这个队列满了之后新接收到的请求将会被拒绝，默认值是100.
+
+
+
+  The maximum queue length for incoming connection requests when all possible request processing threads are in use.
+  Any requests received when the queue is full will be refused. The default value is 100.
+
+  acceptorThreadCount：接收请求的线程个数，默认值是1。
+
+  The number of threads to be used to accept connections. Increase this value on a multi CPU machine,
+  although you would never really need more than 2. Also, with a lot of non keep alive connections,
+  you might want to increase this value as well. Default value is 1.
+
+  acceptorThreadPriority：收请求的线程的线程优先级，默认值5
+
+  The priority of the acceptor threads. The threads used to accept new connections.
+  The default value is 5 (the value of the java.lang.Thread.NORM_PRIORITY constant).
+  See the JavaDoc for the java.lang.Thread class for more details on what this priority means.
+
+
+  address：当服务器有多个ip时使用
+
+  For servers with more than one IP address, this attribute specifies which address will be used for listening on the specified port.
+   By default, the connector will listen all local addresses. Unless the JVM is configured otherwise using system properties,
+   the Java based connectors (NIO, NIO2) will listen on both IPv4 and IPv6 addresses when configured with either 0.0.0.0 or ::.
+   The APR/native connector will only listen on IPv4 addresses if configured with 0.0.0.0 and will listen on IPv6 addresses
+   (and optionally IPv4 addresses depending on the setting of ipv6onlyv6) if configured with ::.
+
+  allowedTrailerHeaders
+
+  By default Tomcat will ignore all trailer headers when processing chunked input. For a header to be processed,
+  it must be added to this comma-separated list of header names.
+
+
+  bindOnInit
+
+  Controls when the socket used by the connector is bound. By default it is bound when the connector is initiated and
+  unbound when the connector is destroyed. If set to false, the socket will be bound when the connector is started and
+  unbound when it is stopped.
+
+  clientCertProvider
+
+  When client certificate information is presented in a form other than instances of java.security.cert.X509Certificate
+  it needs to be converted before it can be used and this property controls which JSSE provider is used to perform the conversion.
+   For example it is used with the AJP connectors, the HTTP APR connector and with the org.apache.catalina.valves.SSLValve.
+   If not specified, the default provider will be used.
+
+
+  compressibleMimeType：压缩MimeType，
+
+  The value is a comma separated list of MIME types for which HTTP compression may be used. The default value is
+  text/html,text/xml,text/plain,text/css,text/javascript,application/javascript .
+
+  compression：为了节省服务器的带宽使用HTTP/1.1 GZIP压缩，是否压缩，默认是"off" 可以设置为："on"，"off"，"force"，或者具体数字
+  off：禁用压缩
+  on: 启动压缩
+  force：所有情况下都会压缩
+  数值：当数据的字节数大于这个值是将启动压缩
+
+  如果content-length值未知，compression又设置为了"on"或者更高级别，output将会被压缩。
+
+  The Connector may use HTTP/1.1 GZIP compression in an attempt to save server bandwidth.
+  The acceptable values for the parameter is "off" (disable compression), "on" (allow compression,
+  which causes text data to be compressed), "force" (forces compression in all cases),
+  or a numerical integer value (which is equivalent to "on", but specifies the minimum amount of data before the output is compressed).
+  If the content-length is not known and compression is set to "on" or more aggressive, the output will also be compressed.
+  If not specified, this attribute is set to "off".
+
+  注意：
+  在使用compression(节省带宽)功能与使用sendfile(节省CPU)功能之间有一个权衡，如果connector支持sendfile特性，比如NIO connector，
+  使用sendfile功能要优先于使用compression功能。当静态文件大于48 Kb时将会以不压缩的方式发送(sent uncompressed)。
+  你可以通过useSendfile属性关闭sendfile功能。
+
+
+  Note: There is a tradeoff between using compression (saving your bandwidth) and using the sendfile feature (saving your CPU cycles).
+  If the connector supports the sendfile feature, e.g. the NIO connector, using sendfile will take precedence over compression.
+  The symptoms will be that static files greater that 48 Kb will be sent uncompressed. You can turn off sendfile by setting
+  useSendfile attribute of the connector, as documented below, or change the sendfile usage threshold in the configuration of
+  the DefaultServlet in the default conf/web.xml or in the web.xml of your web application.
+
+  compressionMinSize：当compression属性设置为"on"时，可以指定这个值来确定当数据多大时进行压缩，默认"2048"
+
+  If compression is set to "on" then this attribute may be used to specify the minimum amount of data before the output is compressed.
+  If not specified, this attribute is defaults to "2048".
+
+  connectionLinger，设置秒数，当sockets关闭时，Connector将会逗留的时间， 默认-1 禁止socket linger。
+
+  The number of seconds during which the sockets used by this Connector will linger when they are closed.
+  The default value is -1 which disables socket linger.
+
+  connectionTimeout，Connector将会等待的时间长度，当接收到一个连接，到接收到request URI line的时间。
+
+  -1：表示永远不超时
+  默认60000毫秒 (即60 seconds)，但是标准的server.xml设置的默认值是20000毫秒 (即 20 seconds)
+  除非设置disableUploadTimeout属性为false，否则它也将会用于读取request body超时时间。
+
+  The number of milliseconds this Connector will wait, after accepting a connection, for the request URI line to be presented.
+  Use a value of -1 to indicate no (i.e. infinite) timeout. The default value is 60000 (i.e. 60 seconds) but note that
+  the standard server.xml that ships with Tomcat sets this to 20000 (i.e. 20 seconds). Unless disableUploadTimeout is set to false,
+  this timeout will also be used when reading the request body (if any).
+
+  connectionUploadTimeout：指定超时时间用于当一个数据上传正在进行时。只有当disableUploadTimeout属性设置为false时这个选项才会生效。
+
+  Specifies the timeout, in milliseconds, to use while a data upload is in progress.
+  This only takes effect if disableUploadTimeout is set to false.
+
+  disableUploadTimeout：当服务进行数据上传时需要长时间的连接超时时间，请设置为false， 默认是true禁止长的超时时间。
+
+
+  This flag allows the servlet container to use a different, usually longer connection timeout during data upload.
+  If not specified, this attribute is set to true which disables this longer timeout.
+
+  executor：指定线程池， 引用Executor元素
+
+  A reference to the name in an Executor element. If this attribute is set, and the named executor exists,
+  the connector will use the executor, and all the other thread attributes will be ignored.
+  Note that if a shared executor is not specified for a connector then the connector will use a private,
+  internal executor to provide the thread pool.
+
+  executorTerminationTimeoutMillis： 默认 5000 (5 seconds)，等待请求处理线程终止时间，
+
+  The time that the private internal executor will wait for request processing threads to terminate before continuing with
+  the process of stopping the connector. If not set, the default is 5000 (5 seconds).
+
+  keepAliveTimeout：在关闭一个连接之前等待这个连接发送其他请求的等待时间，超过这个时间没有接收到新的请求，连接将会被关闭。
+  默认值将使用connectionTimeout属性值，设置为-1表示永远不超时
+
+  The number of milliseconds this Connector will wait for another HTTP request before closing the connection.
+  The default value is to use the value that has been set for the connectionTimeout attribute.
+  Use a value of -1 to indicate no (i.e. infinite) timeout.
+
+  maxConnections：在任意时刻服务器将会接收和处理的最大连接数。当连接数到达这个值时，服务器会继续接收连接，但不会处理。
+  新的连接将会被一直阻塞，直到正在处理的连接数低于maxConnections，这时服务器又会再次开始接收和处理新的连接。
+
+  注意：
+  一旦连接数到达maxConnections，操作系统可能还会基于acceptCount属性的设置继续接收新的连接。
+  这个属性的默认值随着connector类型的不同有不同的默认值，对于NIO and NIO2默认值是10000， 对于APR/native默认值是8192
+  -1 表示没有限制
+
+
+  The maximum number of connections that the server will accept and process at any given time.
+  When this number has been reached, the server will accept, but not process, one further connection.
+  This additional connection be blocked until the number of connections being processed falls below maxConnections
+  at which point the server will start accepting and processing new connections again.
+
+  Note that once the limit has been reached, the operating system may still accept connections based on the acceptCount setting.
+  The default value varies by connector type. For NIO and NIO2 the default is 10000. For APR/native, the default is 8192.
+
+  Note that for APR/native on Windows, the configured value will be reduced to the highest multiple of 1024 that is
+  less than or equal to maxConnections. This is done for performance reasons.
+
+  If set to a value of -1, the maxConnections feature is disabled and connections are not counted.
+
+
+  maxCookieCount：设置一个请求能携带的cookies个数，默认200个， 小于0 表示没有限制
+
+  The maximum number of cookies that are permitted for a request. A value of less than zero means no limit.
+  If not specified, a default value of 200 will be used.
+
+
+  maxExtensionSize：设置chunked HTTP requests请求的长度， -1 表示不限制， 默认8192
+
+  Limits the total length of chunk extensions in chunked HTTP requests. If the value is -1, no limit will be imposed.
+  If not specified, the default value of 8192 will be used.
+
+  maxHttpHeaderSize: 设置request and response HTTP header最大字节数， 默认8192 (8 KB)
+
+  The maximum size of the request and response HTTP header, specified in bytes. If not specified, this attribute is set to 8192 (8 KB).
+
+  maxKeepAliveRequests： 设置KeepAlive的请求个数  默认100
+
+  The maximum number of HTTP requests which can be pipelined until the connection is closed by the server.
+  Setting this attribute to 1 will disable HTTP/1.0 keep-alive, as well as HTTP/1.1 keep-alive and pipelining.
+   Setting this to -1 will allow an unlimited amount of pipelined or keep-alive HTTP requests.
+   If not specified, this attribute is set to 100.
+
+  maxSwallowSize
+
+  The maximum number of request body bytes (excluding transfer encoding overhead) that will be swallowed by Tomcat for
+  an aborted upload. An aborted upload is when Tomcat knows that the request body is going to be ignored but the client
+  still sends it. If Tomcat does not swallow the body the client is unlikely to see the response.
+  If not specified the default of 2097152 (2 megabytes) will be used. A value of less than zero indicates that no limit
+  should be enforced.
+
+  maxThreads：设置处理请求的最大线程数(供内部线程池使用，如果使用了Executor元素指定的线程池，这个设置将被忽略)，
+  这个值也代表着服务器能同时处理请求的个数。
+
+  The maximum number of request processing threads to be created by this Connector,
+  which therefore determines the maximum number of simultaneous requests that can be handled.
+  If not specified, this attribute is set to 200. If an executor is associated with this connector,
+  this attribute is ignored as the connector will execute tasks using the executor rather than an internal thread pool.
+
+  Note that if an executor is configured any value set for this attribute will be recorded correctly but it will be reported
+   (e.g. via JMX) as -1 to make clear that it is not used.
+
+  maxTrailerSize
+
+  Limits the total length of trailing headers in the last chunk of a chunked HTTP request. If the value is -1,
+  no limit will be imposed. If not specified, the default value of 8192 will be used.
+
+  minSpareThreads：设置保持允许的最小线程个数。如果没有设置默认是10个。如果引用了Executor元素指定的线程池而不是内部线程池这个设置将无效。
+
+  The minimum number of threads always kept running. If not specified, the default of 10 is used.
+  If an executor is associated with this connector, this attribute is ignored as the connector will execute tasks
+  using the executor rather than an internal thread pool.
+
+  Note that if an executor is configured any value set for this attribute will be recorded correctly but it will be reported
+  (e.g. via JMX) as -1 to make clear that it is not used.
+
+
+  noCompressionUserAgents
+
+  The value is a regular expression (using java.util.regex) matching the user-agent header of HTTP clients for which
+  compression should not be used, because these clients, although they do advertise support for the feature,
+  have a broken implementation. The default value is an empty String (regexp matching disabled).
+
+  processorCache: 为了提高性能protocol处理器缓存Processor objects，这个设置指定了多少个对象可以被缓存, -1 表示没有限制， 默认200个，
+  如果没有使用Servlet 3.0 asynchronous processing，建议和maxThreads保持一致，如果使用了则要大于maxThreads
+
+  The protocol handler caches Processor objects to speed up performance.
+  This setting dictates how many of these objects get cached. -1 means unlimited, default is 200.
+  If not using Servlet 3.0 asynchronous processing, a good default is to use the same as the maxThreads setting.
+  If using Servlet 3.0 asynchronous processing, a good default is to use the larger of maxThreads and
+  the maximum number of expected concurrent requests (synchronous and asynchronous).
+
+  restrictedUserAgents
+
+  The value is a regular expression (using java.util.regex) matching the user-agent header of HTTP clients for which HTTP/1.1 or HTTP/1.0 keep alive should not be used, even if the clients advertise support for these features. The default value is an empty String (regexp matching disabled).
+  server
+
+  Overrides the Server header for the http response. If set, the value for this attribute overrides any Server header set by a web application. If not set, any value specified by the application is used. If the application does not specify a value then no Server header is set.
+
+  serverRemoveAppProvidedValues
+
+  If true, any Server header set by a web application will be removed. Note that if server is set,
+   this attribute is effectively ignored. If not set, the default value of false will be used.
+
+  SSLEnabled：开启SSL连接
+
+  Use this attribute to enable SSL traffic on a connector. To turn on SSL handshake/encryption/decryption on a connector set this value to true. The default value is false. When turning this value true you will want to set the scheme and the secure attributes as well to pass the correct request.getScheme() and request.isSecure() values to the servlets See SSL Support for more information.
+
+  tcpNoDelay：TCP_NO_DELAY默认true，在大多数情况下能提高性能
+
+  If set to true, the TCP_NO_DELAY option will be set on the server socket, which improves performance under most circumstances.
+  This is set to true by default.
+
+  threadPriority：线程优先级，默认5
+
+  The priority of the request processing threads within the JVM. The default value is 5 (the value of the java.lang.Thread.NORM_PRIORITY constant). See the JavaDoc for the java.lang.Thread class for more details on what this priority means. If an executor is associated with this connector, this attribute is ignored as the connector will execute tasks using the executor rather than an internal thread pool. Note that if an executor is configured any value set for this attribute will be recorded correctly but it will be reported (e.g. via JMX) as -1 to make clear that it is not used.
+
+
+  Java TCP socket attributes：
+
+  socket.rxBufSize
+
+  (int)The socket receive buffer (SO_RCVBUF) size in bytes. JVM default used if not set.
+  socket.txBufSize
+
+  (int)The socket send buffer (SO_SNDBUF) size in bytes. JVM default used if not set.
+  socket.tcpNoDelay
+
+  (bool)This is equivalent to standard attribute tcpNoDelay.
+  socket.soKeepAlive
+
+  (bool)Boolean value for the socket's keep alive setting (SO_KEEPALIVE). JVM default used if not set.
+  socket.ooBInline
+
+  (bool)Boolean value for the socket OOBINLINE setting. JVM default used if not set.
+  socket.soReuseAddress
+
+  (bool)Boolean value for the sockets reuse address option (SO_REUSEADDR). JVM default used if not set.
+  socket.soLingerOn
+
+  (bool)Boolean value for the sockets so linger option (SO_LINGER). A value for the standard attribute connectionLinger that is >=0 is equivalent to setting this to true. A value for the standard attribute connectionLinger that is <0 is equivalent to setting this to false. Both this attribute and soLingerTime must be set else the JVM defaults will be used for both.
+  socket.soLingerTime
+
+  (int)Value in seconds for the sockets so linger option (SO_LINGER). This is equivalent to standard attribute connectionLinger. Both this attribute and soLingerOn must be set else the JVM defaults will be used for both.
+  socket.soTimeout
+
+  This is equivalent to standard attribute connectionTimeout.
+  socket.performanceConnectionTime
+
+  (int)The first value for the performance settings. See Socket Performance Options. All three performance attributes must be set else the JVM defaults will be used for all three.
+  socket.performanceLatency
+
+  (int)The second value for the performance settings. See Socket Performance Options. All three performance attributes must be set else the JVM defaults will be used for all three.
+  socket.performanceBandwidth
+
+  (int)The third value for the performance settings. See Socket Performance Options. All three performance attributes must be set else the JVM defaults will be used for all three.
+  socket.unlockTimeout
+
+  (int) The timeout for a socket unlock. When a connector is stopped, it will try to release the acceptor thread by opening a connector to itself. The default value is 250 and the value is in milliseconds
+
+
+
+
+
+
+  NIO specific configuration：
+
+  pollerThreadCount
+
+  (int)The number of threads to be used to run for the polling events. Default value is 1 per processor but not more than 2.
+  When accepting a socket, the operating system holds a global lock. So the benefit of going above 2 threads diminishes rapidly. Having more than one thread is for system that need to accept connections very rapidly. However usually just increasing acceptCount will solve that problem. Increasing this value may also be beneficial when a large amount of send file operations are going on.
+  pollerThreadPriority
+
+  (int)The priority of the poller threads. The default value is 5 (the value of the java.lang.Thread.NORM_PRIORITY constant). See the JavaDoc for the java.lang.Thread class for more details on what this priority means.
+  selectorTimeout
+
+  (int)The time in milliseconds to timeout on a select() for the poller. This value is important, since connection clean up is done on the same thread, so do not set this value to an extremely high one. The default value is 1000 milliseconds.
+  useSendfile
+
+  (bool)Use this attribute to enable or disable sendfile capability. The default value is true. Note that the use of sendfile will disable any compression that Tomcat may otherwise have performed on the response.
+  socket.directBuffer
+
+  (bool)Boolean value, whether to use direct ByteBuffers or java mapped ByteBuffers. If true then java.nio.ByteBuffer.allocateDirect() is used to allocate the buffers, if false then java.nio.ByteBuffer.allocate() is used. The default value is false.
+  When you are using direct buffers, make sure you allocate the appropriate amount of memory for the direct memory space. On Sun's JDK that would be something like -XX:MaxDirectMemorySize=256m.
+  socket.directSslBuffer
+
+  (bool)Boolean value, whether to use direct ByteBuffers or java mapped ByteBuffers for the SSL buffers. If true then java.nio.ByteBuffer.allocateDirect() is used to allocate the buffers, if false then java.nio.ByteBuffer.allocate() is used. The default value is false.
+  When you are using direct buffers, make sure you allocate the appropriate amount of memory for the direct memory space. On Oracle's JDK that would be something like -XX:MaxDirectMemorySize=256m.
+  socket.appReadBufSize
+
+  (int)Each connection that is opened up in Tomcat get associated with a read ByteBuffer. This attribute controls the size of this buffer. By default this read buffer is sized at 8192 bytes. For lower concurrency, you can increase this to buffer more data. For an extreme amount of keep alive connections, decrease this number or increase your heap size.
+  socket.appWriteBufSize
+
+  (int)Each connection that is opened up in Tomcat get associated with a write ByteBuffer. This attribute controls the size of this buffer. By default this write buffer is sized at 8192 bytes. For low concurrency you can increase this to buffer more response data. For an extreme amount of keep alive connections, decrease this number or increase your heap size.
+  The default value here is pretty low, you should up it if you are not dealing with tens of thousands concurrent connections.
+  socket.bufferPool
+
+  (int)The NIO connector uses a class called NioChannel that holds elements linked to a socket. To reduce garbage collection, the NIO connector caches these channel objects. This value specifies the size of this cache. The default value is 500, and represents that the cache will hold 500 NioChannel objects. Other values are -1 for unlimited cache and 0 for no cache.
+  socket.bufferPoolSize
+
+  (int)The NioChannel pool can also be size based, not used object based. The size is calculated as follows:
+  NioChannel buffer size = read buffer size + write buffer size
+  SecureNioChannel buffer size = application read buffer size + application write buffer size + network read buffer size + network write buffer size
+  The value is in bytes, the default value is 1024*1024*100 (100MB).
+  socket.processorCache
+
+  (int)Tomcat will cache SocketProcessor objects to reduce garbage collection. The integer value specifies how many objects to keep in the cache at most. The default is 500. Other values are -1 for unlimited cache and 0 for no cache.
+  socket.keyCache
+
+  (int)Tomcat will cache KeyAttachment objects to reduce garbage collection. The integer value specifies how many objects to keep in the cache at most. The default is 500. Other values are -1 for unlimited cache and 0 for no cache.
+  socket.eventCache
+
+  (int)Tomcat will cache PollerEvent objects to reduce garbage collection. The integer value specifies how many objects to keep in the cache at most. The default is 500. Other values are -1 for unlimited cache and 0 for no cache.
+  selectorPool.maxSelectors
+
+  (int)The max selectors to be used in the pool, to reduce selector contention. Use this option when the command line org.apache.tomcat.util.net.NioSelectorShared value is set to false. Default value is 200.
+  selectorPool.maxSpareSelectors
+
+  (int)The max spare selectors to be used in the pool, to reduce selector contention. When a selector is returned to the pool, the system can decide to keep it or let it be GC'd. Use this option when the command line org.apache.tomcat.util.net.NioSelectorShared value is set to false. Default value is -1 (unlimited).
+  command-line-options
+
+  The following command line options are available for the NIO connector:
+  -Dorg.apache.tomcat.util.net.NioSelectorShared=true|false - default is true. Set this value to false if you wish to use a selector for each thread. When you set it to false, you can control the size of the pool of selectors by using the selectorPool.maxSelectors attribute.
+
+  NIO2 specific configuration：
+  NIO2专有的属性：
+
+  useSendfile：是否启用	sendfile，默认true， 启动了这个选项将会禁用compression功能。
+
+  (bool)Use this attribute to enable or disable sendfile capability. The default value is true.
+  Note that the use of sendfile will disable any compression that Tomcat may otherwise have performed on the response.
+
+  socket.directBuffer：是否使用	direct ByteBuffers or java mapped ByteBuffers， 默认false，如果要使用这个功能，必须分配一定的内存。
+   提供这个参数指定：-XX:MaxDirectMemorySize=256m
+
+  (bool)Boolean value, whether to use direct ByteBuffers or java mapped ByteBuffers.
+  If true then java.nio.ByteBuffer.allocateDirect() is used to allocate the buffers,
+  if false then java.nio.ByteBuffer.allocate() is used. The default value is false.
+  When you are using direct buffers, make sure you allocate the appropriate amount of memory for the direct memory space.
+  On Sun's JDK that would be something like -XX:MaxDirectMemorySize=256m.
+
+  socket.directSslBuffer
+
+  (bool)Boolean value, whether to use direct ByteBuffers or java mapped ByteBuffers for the SSL buffers.
+  If true then java.nio.ByteBuffer.allocateDirect() is used to allocate the buffers,
+  if false then java.nio.ByteBuffer.allocate() is used. The default value is false.
+  When you are using direct buffers, make sure you allocate the appropriate amount of memory for the direct memory space.
+  On Oracle's JDK that would be something like -XX:MaxDirectMemorySize=256m.
+
+
+  socket.appReadBufSize: 每个在Tomcat中打开的连接都会有一个与之关联的read ByteBuffer，这个属性就是用来设置这个buffer的大小的，
+  默认值是8192 bytes. 在低并发的情况下你可以提高这个值来缓存更多的数据，对于一个很长的keep alive connections连接，请减少这个值或者增加堆内存。
+
+  (int)Each connection that is opened up in Tomcat get associated with a read ByteBuffer.
+  This attribute controls the size of this buffer. By default this read buffer is sized at 8192 bytes.
+  For lower concurrency, you can increase this to buffer more data. For an extreme amount of keep alive connections,
+  decrease this number or increase your heap size.
+
+
+  socket.appWriteBufSize：指定write ByteBuffer的缓冲区大小， 如果你不想要支持数以万计的并发，可以提高这个值， 默认值8192 bytes.这个值是非常低的
+
+  (int)Each connection that is opened up in Tomcat get associated with a write ByteBuffer.
+  This attribute controls the size of this buffer. By default this write buffer is sized at 8192 bytes.
+  For low concurrency you can increase this to buffer more response data. For an extreme amount of keep alive connections,
+  decrease this number or increase your heap size.
+  The default value here is pretty low, you should up it if you are not dealing with tens of thousands concurrent connections.
+
+
+  socket.bufferPool:缓存Nio2Channel objects个数，为了减少垃圾回收， 默认值500个, -1 无限制， 0 不缓存
+
+  (int)The NIO2 connector uses a class called Nio2Channel that holds elements linked to a socket.
+  To reduce garbage collection, the NIO2 connector caches these channel objects.
+  This value specifies the size of this cache. The default value is 500,
+  and represents that the cache will hold 500 Nio2Channel objects.
+  Other values are -1 for unlimited cache and 0 for no cache.
+
+
+  socket.processorCache：缓存SocketProcessor objects个数，为了减少垃圾回收， 默认值500个, -1 无限制， 0 不缓存
+
+  (int)Tomcat will cache SocketProcessor objects to reduce garbage collection.
+  The integer value specifies how many objects to keep in the cache at most.
+  The default is 500. Other values are -1 for unlimited cache and 0 for no cache.
+
+
+
+
+
+
+
+
+
+      -->
+      <Connector port="8080" protocol="HTTP/1.1"
+                 connectionTimeout="20000"
+                 redirectPort="8443" />
+
+      <!--
+      <Connector port="8080" protocol="HTTP/1.1"
+                 connectionTimeout="20000"
+                 redirectPort="8443" />
+      -->
+      <!-- A "Connector" using the shared thread pool-->
+      <!--
+      <Connector executor="tomcatThreadPool"
+                 port="8080" protocol="HTTP/1.1"
+                 connectionTimeout="20000"
+                 redirectPort="8443" />
+      -->
+      <!-- Define a SSL/TLS HTTP/1.1 Connector on port 8443
+           This connector uses the NIO implementation. The default
+           SSLImplementation will depend on the presence of the APR/native
+           library and the useOpenSSL attribute of the
+           AprLifecycleListener.
+           Either JSSE or OpenSSL style configuration may be used regardless of
+           the SSLImplementation selected. JSSE style configuration is used below.
+      -->
+      <!--
+      <Connector port="8443" protocol="org.apache.coyote.http11.Http11NioProtocol"
+                 maxThreads="150" SSLEnabled="true">
+          <SSLHostConfig>
+              <Certificate certificateKeystoreFile="conf/localhost-rsa.jks"
+                           type="RSA" />
+          </SSLHostConfig>
+      </Connector>
+      -->
+      <!-- Define a SSL/TLS HTTP/1.1 Connector on port 8443 with HTTP/2
+           This connector uses the APR/native implementation which always uses
+           OpenSSL for TLS.
+           Either JSSE or OpenSSL style configuration may be used. OpenSSL style
+           configuration is used below.
+      -->
+      <!--
+      <Connector port="8443" protocol="org.apache.coyote.http11.Http11AprProtocol"
+                 maxThreads="150" SSLEnabled="true" >
+          <UpgradeProtocol className="org.apache.coyote.http2.Http2Protocol" />
+          <SSLHostConfig>
+              <Certificate certificateKeyFile="conf/localhost-rsa-key.pem"
+                           certificateFile="conf/localhost-rsa-cert.pem"
+                           certificateChainFile="conf/localhost-rsa-chain.pem"
+                           type="RSA" />
+          </SSLHostConfig>
+      </Connector>
+      -->
+
+      <!-- Define an AJP 1.3 Connector on port 8009 -->
+      <Connector port="8009" protocol="AJP/1.3" redirectPort="8443" />
+
+
+      <!-- An Engine represents the entry point (within Catalina) that processes
+           every request.  The Engine implementation for Tomcat stand alone
+           analyzes the HTTP headers included with the request, and passes them
+           on to the appropriate Host (virtual host).
+           Documentation at /docs/config/engine.html -->
+
+      <!-- You should set jvmRoute to support load-balancing via AJP ie :
+      <Engine name="Catalina" defaultHost="localhost" jvmRoute="jvm1">
+      -->
+      <Engine name="Catalina" defaultHost="localhost">
+
+        <!--For clustering, please take a look at documentation at:
+            /docs/cluster-howto.html  (simple how to)
+            /docs/config/cluster.html (reference documentation) -->
         <!--
-        <Valve className="org.apache.catalina.authenticator.SingleSignOn" />
+        <Cluster className="org.apache.catalina.ha.tcp.SimpleTcpCluster"/>
         -->
 
-        <!-- Access log processes all example.
-             Documentation at: /docs/config/valve.html
-             Note: The pattern used is equivalent to using pattern="common" -->
-        <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
-               prefix="localhost_access_log" suffix=".txt"
-               pattern="%h %l %u %t &quot;%r&quot; %s %b" />
+        <!-- Use the LockOutRealm to prevent attempts to guess user passwords
+             via a brute-force attack -->
+        <Realm className="org.apache.catalina.realm.LockOutRealm">
+          <!-- This Realm uses the UserDatabase configured in the global JNDI
+               resources under the key "UserDatabase".  Any edits
+               that are performed against this UserDatabase are immediately
+               available for use by the Realm.  -->
+          <Realm className="org.apache.catalina.realm.UserDatabaseRealm"
+                 resourceName="UserDatabase"/>
+        </Realm>
 
-      </Host>
-    </Engine>
-  </Service>
-</Server>
+        <Host name="localhost"  appBase="webapps"
+              unpackWARs="true" autoDeploy="true">
+
+          <!-- SingleSignOn valve, share authentication between web applications
+               Documentation at: /docs/config/valve.html -->
+          <!--
+          <Valve className="org.apache.catalina.authenticator.SingleSignOn" />
+          -->
+
+          <!-- Access log processes all example.
+               Documentation at: /docs/config/valve.html
+               Note: The pattern used is equivalent to using pattern="common" -->
+          <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
+                 prefix="localhost_access_log" suffix=".txt"
+                 pattern="%h %l %u %t &quot;%r&quot; %s %b" />
+
+        </Host>
+      </Engine>
+    </Service>
+  </Server>
